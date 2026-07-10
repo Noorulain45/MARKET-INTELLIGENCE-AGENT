@@ -54,30 +54,60 @@ export async function analyzeSentiment(text: string): Promise<{
   complaints: string[];
   featureRequests: string[];
 }> {
+  const response = await generateCompletion(
+    `You are a sentiment analysis engine. Analyze the sentiment of the user's text.
+Respond with ONLY a raw JSON object — no markdown, no code fences, no explanation before or after.
+The JSON must have exactly these fields:
+{
+  "score": <number from -1.0 (very negative) to 1.0 (very positive)>,
+  "label": <"positive" | "negative" | "neutral">,
+  "topics": {
+    "positive": [<up to 3 positive themes as short strings>],
+    "negative": [<up to 3 negative themes as short strings>],
+    "neutral": [<up to 3 neutral themes as short strings>]
+  },
+  "complaints": [<up to 3 complaint strings>],
+  "featureRequests": [<up to 3 feature request strings>]
+}`,
+    text.slice(0, 2000),
+    'llama-3.3-70b-versatile',
+    600,
+    0.1
+  );
+
+  // Extract the first {...} block — handles fences, preamble text, trailing prose
+  const match = response.match(/\{[\s\S]*\}/);
+  if (!match) {
+    logger.error('analyzeSentiment: no JSON object found in response', { response });
+    throw new Error('Sentiment model did not return a valid JSON object');
+  }
+
   try {
-    const response = await generateCompletion(
-      `Analyze the sentiment of the following text. Return a JSON object with:
-       - score: number between -1 (very negative) and 1 (very positive)
-       - label: "positive", "negative", or "neutral"
-       - topics: { positive: string[], negative: string[], neutral: string[] }
-       - complaints: string[] (max 3)
-       - featureRequests: string[] (max 3)
-       Return ONLY valid JSON, no explanation.`,
-      text.slice(0, 2000),
-      'llama-3.3-70b-versatile',
-      512,
-      0.1
-    );
-    const cleaned = response.replace(/```json\n?|\n?```/g, '').trim();
-    return JSON.parse(cleaned);
-  } catch (error) {
-    logger.error('Sentiment analysis error:', error);
+    const parsed = JSON.parse(match[0]);
+
+    // Coerce and validate key fields so the frontend never receives NaN/undefined
+    const score = typeof parsed.score === 'number' && isFinite(parsed.score)
+      ? Math.max(-1, Math.min(1, parsed.score))
+      : 0;
+
+    const validLabels = ['positive', 'negative', 'neutral'] as const;
+    const label: 'positive' | 'negative' | 'neutral' = validLabels.includes(parsed.label)
+      ? parsed.label
+      : score > 0.1 ? 'positive' : score < -0.1 ? 'negative' : 'neutral';
+
     return {
-      score: 0,
-      label: 'neutral',
-      topics: { positive: [], negative: [], neutral: [] },
-      complaints: [],
-      featureRequests: [],
+      score,
+      label,
+      topics: {
+        positive: Array.isArray(parsed.topics?.positive) ? parsed.topics.positive : [],
+        negative: Array.isArray(parsed.topics?.negative) ? parsed.topics.negative : [],
+        neutral:  Array.isArray(parsed.topics?.neutral)  ? parsed.topics.neutral  : [],
+      },
+      complaints:      Array.isArray(parsed.complaints)      ? parsed.complaints      : [],
+      featureRequests: Array.isArray(parsed.featureRequests) ? parsed.featureRequests : [],
     };
+  } catch (parseError) {
+    logger.error('analyzeSentiment: JSON.parse failed', { raw: match[0], parseError });
+    throw new Error('Failed to parse sentiment response from model');
   }
 }

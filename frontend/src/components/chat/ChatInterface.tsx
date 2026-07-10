@@ -170,6 +170,12 @@ export default function ChatInterface({ chatId, initialMessages = [], onChatCrea
         <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              sendMessage(e as unknown as React.FormEvent);
+            }
+          }}
           placeholder="Ask about market trends, competitors, sentiment..."
           className="flex-1"
           disabled={isLoading}

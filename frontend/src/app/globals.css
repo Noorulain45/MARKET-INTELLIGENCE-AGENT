@@ -4,42 +4,49 @@
 
 @layer base {
   :root {
-    --background: 222 47% 11%;
-    --foreground: 213 31% 91%;
-    --card: 222 47% 14%;
-    --card-foreground: 213 31% 91%;
-    --border: 216 34% 20%;
-    --input: 216 34% 20%;
-    --ring: 224 76% 48%;
-    --primary: 224 76% 48%;
+    /* Dark pink theme (default) */
+    --background: 330 25% 10%;
+    --foreground: 330 20% 92%;
+    --card: 330 25% 13%;
+    --card-foreground: 330 20% 92%;
+    --border: 330 30% 22%;
+    --input: 330 30% 22%;
+    --ring: 330 80% 65%;
+    --primary: 330 80% 65%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 222 47% 18%;
-    --secondary-foreground: 213 31% 91%;
-    --muted: 223 47% 18%;
-    --muted-foreground: 215 20% 55%;
-    --accent: 224 76% 48%;
+    --secondary: 330 25% 18%;
+    --secondary-foreground: 330 20% 88%;
+    --muted: 330 25% 18%;
+    --muted-foreground: 330 15% 55%;
+    --accent: 320 70% 60%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 63% 50%;
     --destructive-foreground: 0 0% 100%;
-    --radius: 0.5rem;
+    --radius: 0.6rem;
+
+    /* Glitter palette */
+    --glitter-1: 330 100% 75%;
+    --glitter-2: 310 90% 70%;
+    --glitter-3: 350 100% 80%;
+    --glitter-gold: 45 100% 70%;
   }
 
   .light {
-    --background: 0 0% 98%;
-    --foreground: 222 47% 11%;
+    --background: 330 40% 97%;
+    --foreground: 330 30% 15%;
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 224 76% 48%;
-    --primary: 224 76% 48%;
+    --card-foreground: 330 30% 15%;
+    --border: 330 30% 85%;
+    --input: 330 30% 85%;
+    --ring: 330 80% 60%;
+    --primary: 330 80% 60%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222 47% 11%;
+    --secondary: 330 40% 93%;
+    --secondary-foreground: 330 30% 15%;
+    --muted: 330 40% 93%;
+    --muted-foreground: 330 15% 50%;
+    --accent: 320 70% 58%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
   }
@@ -55,7 +62,90 @@
   }
 }
 
-/* Custom scrollbar */
+/* ─── Glitter / Shimmer ─────────────────────────────────────────── */
+
+/* Sparkle overlay on primary buttons / logo */
+.glitter {
+  position: relative;
+  overflow: hidden;
+}
+.glitter::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    hsl(var(--glitter-gold) / 0.45) 48%,
+    hsl(var(--glitter-3) / 0.55) 52%,
+    transparent 70%
+  );
+  background-size: 250% 250%;
+  animation: glitter-sweep 3s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes glitter-sweep {
+  0%   { background-position: 200% 50%; }
+  100% { background-position: -100% 50%; }
+}
+
+/* Subtle floating sparkle dots */
+.sparkle-bg {
+  background-image:
+    radial-gradient(circle, hsl(var(--glitter-1) / 0.25) 1px, transparent 1px),
+    radial-gradient(circle, hsl(var(--glitter-gold) / 0.18) 1px, transparent 1px),
+    radial-gradient(circle, hsl(var(--glitter-2) / 0.2) 1px, transparent 1px);
+  background-size: 60px 60px, 90px 90px, 120px 120px;
+  background-position: 0 0, 30px 45px, 15px 20px;
+}
+
+/* Pink gradient glow card border */
+.glow-card {
+  border-color: transparent;
+  background-clip: padding-box;
+  box-shadow:
+    0 0 0 1px hsl(var(--primary) / 0.35),
+    0 4px 24px hsl(var(--primary) / 0.12),
+    0 1px 4px hsl(var(--glitter-2) / 0.15);
+  transition: box-shadow 0.25s ease;
+}
+.glow-card:hover {
+  box-shadow:
+    0 0 0 1px hsl(var(--primary) / 0.6),
+    0 6px 32px hsl(var(--primary) / 0.22),
+    0 2px 8px hsl(var(--glitter-gold) / 0.2);
+}
+
+/* Shimmer text for headings */
+.shimmer-text {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--primary)),
+    hsl(var(--glitter-gold)),
+    hsl(var(--glitter-3)),
+    hsl(var(--primary))
+  );
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer-move 4s linear infinite;
+}
+
+@keyframes shimmer-move {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+
+/* Active nav pill glow */
+.nav-active-glow {
+  background: hsl(var(--primary) / 0.12);
+  box-shadow: inset 0 0 0 1px hsl(var(--primary) / 0.3),
+              0 0 12px hsl(var(--primary) / 0.18);
+}
+
+/* ─── Custom scrollbar ─────────────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -64,25 +154,72 @@
   @apply bg-secondary;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-muted-foreground/30 rounded-full;
+  background: hsl(var(--primary) / 0.35);
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-muted-foreground/50;
+  background: hsl(var(--primary) / 0.6);
 }
 
-/* Prose for AI content */
+/* ─── AI prose ─────────────────────────────────────────────────── */
+.ai-prose {
+  text-align: justify;
+  text-justify: inter-word;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  word-break: break-word;
+  line-height: 1.75;
+  letter-spacing: 0.01em;
+}
 .ai-prose p {
-  @apply mb-3 leading-relaxed;
+  @apply mb-3;
+  text-align: justify;
+  text-justify: inter-word;
+}
+/* Last paragraph — don't stretch a single short line */
+.ai-prose p:last-child {
+  text-align: left;
 }
 .ai-prose ul {
-  @apply list-disc pl-5 mb-3 space-y-1;
+  @apply list-disc pl-5 mb-4 space-y-1.5;
+  text-align: left; /* lists read better left-aligned */
 }
 .ai-prose ol {
-  @apply list-decimal pl-5 mb-3 space-y-1;
+  @apply list-decimal pl-5 mb-4 space-y-1.5;
+  text-align: left;
+}
+.ai-prose li {
+  @apply leading-relaxed;
 }
 .ai-prose strong {
   @apply font-semibold text-foreground;
 }
-.ai-prose h1, .ai-prose h2, .ai-prose h3 {
-  @apply font-semibold mb-2 mt-4;
+.ai-prose em {
+  @apply italic text-foreground/80;
+}
+/* Section headings */
+.ai-prose h1 {
+  @apply text-base font-bold mb-2 mt-5 text-foreground tracking-tight;
+  text-align: left;
+}
+.ai-prose h2 {
+  @apply text-sm font-bold mb-2 mt-4 text-foreground tracking-tight;
+  text-align: left;
+}
+.ai-prose h3 {
+  @apply text-sm font-semibold mb-1.5 mt-3 text-primary/90;
+  text-align: left;
+}
+/* Inline code */
+.ai-prose code {
+  @apply bg-secondary text-primary/90 rounded px-1 py-0.5 text-xs font-mono;
+}
+/* Horizontal rule as a subtle section divider */
+.ai-prose hr {
+  @apply border-border my-4;
+}
+/* Blockquote for callouts */
+.ai-prose blockquote {
+  @apply border-l-2 border-primary/40 pl-3 my-3 italic text-muted-foreground;
+  text-align: left;
 }

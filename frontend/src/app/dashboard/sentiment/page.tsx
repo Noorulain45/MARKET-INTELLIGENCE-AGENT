@@ -32,7 +32,15 @@ export default function SentimentPage() {
   const analyzeMutation = useMutation({
     mutationFn: (text: string) => sentimentApi.analyze(text),
     onSuccess: (res) => {
-      setAnalysisResult(res.data.data);
+      const raw = res.data.data;
+      // DB document uses `overallScore`; AI result uses `score` — normalise both
+      setAnalysisResult({
+        score: typeof raw.score === 'number' ? raw.score : raw.overallScore ?? 0,
+        label: raw.label ?? 'neutral',
+        topics: raw.topics ?? { positive: [], negative: [], neutral: [] },
+        complaints: raw.complaints ?? [],
+        featureRequests: raw.featureRequests ?? [],
+      });
       toast.success('Analysis complete');
     },
     onError: () => toast.error('Analysis failed'),

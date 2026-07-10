@@ -1,7 +1,44 @@
 import { Request, Response, NextFunction } from 'express';
 import { Sentiment } from '../models/Sentiment.model';
-import { sendSuccess, sendPaginated } from '../utils/apiResponse';
+import { sendSuccess, sendError, sendPaginated } from '../utils/apiResponse';
 import { setCache, getCache } from '../config/redis';
+import { analyzeSentiment } from '../services/ai/agents/sentimentAgent';
+
+export async function analyzeTextSentiment(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { text, keyword, source = 'forums', competitorId } = req.body;
+
+    if (!text || typeof text !== 'string' || text.trim().length === 0) {
+      sendError(res, 'text is required', 400);
+      return;
+    }
+
+    const result = await analyzeSentiment(text.trim());
+
+    // Persist the result so it shows up in the overview/list
+    const saved = await Sentiment.create({
+      keyword: keyword || text.slice(0, 80),
+      source,
+      text: text.trim(),
+      overallScore: result.score,
+      label: result.label,
+      topics: result.topics,
+      complaints: result.complaints,
+      featureRequests: result.featureRequests,
+      analyzedAt: new Date(),
+      ...(competitorId ? { competitorId } : {}),
+    });
+
+    // Return a flat object the frontend can consume directly.
+    // The DB field is `overallScore` but the UI expects `score` — include both.
+    sendSuccess(res, {
+      ...saved.toObject(),
+      score: result.score,        // alias so frontend `analysisResult.score` works
+    }, 'Sentiment analysis complete', 201);
+  } catch (error) {
+    next(error);
+  }
+}
 
 export async function getSentiments(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
