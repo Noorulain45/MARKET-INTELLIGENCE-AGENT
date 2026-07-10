@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/index.ts",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "api/index.ts"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/v1/cron/news",
+      "schedule": "0 */2 * * *"
+    },
+    {
+      "path": "/api/v1/cron/trends",
+      "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/v1/cron/sentiment",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/v1/cron/insights",
+      "schedule": "0 */12 * * *"
+    }
+  ]
+}

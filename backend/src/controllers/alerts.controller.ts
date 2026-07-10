@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from 'express';
 import { Alert } from '../models/Alert.model';
 import { Notification } from '../models/Notification.model';
 import { sendSuccess, sendError, sendPaginated } from '../utils/apiResponse';
-import { emitToUser } from '../config/socket';
 
 export async function getAlerts(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {

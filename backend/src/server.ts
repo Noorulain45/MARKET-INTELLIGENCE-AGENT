@@ -1,18 +1,10 @@
 import 'dotenv/config';
-import http from 'http';
 import app from './app';
 import { connectDB } from './config/database';
 import { connectRedis } from './config/redis';
-import { initializeSocketIO } from './config/socket';
 import { logger } from './utils/logger';
-import { startScheduledJobs } from './jobs/scheduler';
 
 const PORT = process.env.PORT || 5000;
-
-const server = http.createServer(app);
-
-// Initialize Socket.IO
-initializeSocketIO(server);
 
 async function startServer() {
   try {
@@ -28,21 +20,15 @@ async function startServer() {
       process.exit(1);
     }
 
-    // Connect to Redis
+    // Connect to Redis (optional — gracefully skipped if REDIS_URL not set)
     try {
       await connectRedis();
-      logger.info('✅ Redis connected');
     } catch (err) {
-      logger.warn('⚠️  Redis connection failed — caching and queues will be unavailable.');
-      logger.warn('   Start Redis with: redis-server  (or install from https://redis.io/download)');
+      logger.warn('⚠️  Redis connection failed — caching will be unavailable.');
       logger.warn('   Continuing without Redis...');
     }
 
-    // Start scheduled background jobs
-    startScheduledJobs();
-    logger.info('✅ Scheduled jobs started');
-
-    server.listen(PORT, () => {
+    app.listen(PORT, () => {
       logger.info(`🚀 Server running on port ${PORT} in ${process.env.NODE_ENV} mode`);
       logger.info(`📚 API Docs: http://localhost:${PORT}/api/docs`);
     });
@@ -55,15 +41,12 @@ async function startServer() {
 // Graceful shutdown
 process.on('SIGTERM', () => {
   logger.info('SIGTERM received. Shutting down gracefully...');
-  server.close(() => {
-    logger.info('Process terminated');
-    process.exit(0);
-  });
+  process.exit(0);
 });
 
 process.on('unhandledRejection', (err: Error) => {
   logger.error('Unhandled Rejection:', err);
-  server.close(() => process.exit(1));
+  process.exit(1);
 });
 
 startServer();

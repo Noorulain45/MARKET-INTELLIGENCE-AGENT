@@ -115,8 +115,8 @@ export const chatApi = {
 // ─── Agents ───────────────────────────────────────────────────────────────────
 export const agentsApi = {
   runAgent: (type: string, query?: string) =>
-    api.post(`/agents/run/${type}`, { query }),
-  getDailySummary: () => api.get('/agents/summary'),
+    api.post(`/agents/${type}/run`, { query }),
+  getDailySummary: () => api.get('/agents/daily-summary'),
   runFull: (query?: string) => api.post('/agents/run', { type: 'full', query }),
 };
 
@@ -136,18 +136,18 @@ export const alertsApi = {
   deleteAlert: (id: string) => api.delete(`/alerts/${id}`),
 };
 
-// ─── Search ───────────────────────────────────────────────────────────────────
-export const searchApi = {
-  search: (query: string, filters?: Record<string, unknown>) =>
-    api.get('/search', { params: { q: query, ...filters } }),
-};
-
 // ─── Watchlist ────────────────────────────────────────────────────────────────
 export const watchlistApi = {
   getWatchlists: () => api.get('/watchlists'),
   createWatchlist: (data: Record<string, unknown>) => api.post('/watchlists', data),
   updateWatchlist: (id: string, data: Record<string, unknown>) => api.put(`/watchlists/${id}`, data),
   deleteWatchlist: (id: string) => api.delete(`/watchlists/${id}`),
+};
+
+// ─── Notifications ────────────────────────────────────────────────────────────
+export const notificationsApi = {
+  getNotifications: () => api.get('/alerts/notifications'),
+  markRead: (id: string) => api.put(`/alerts/notifications/${id}/read`),
 };
 
 // ─── User ─────────────────────────────────────────────────────────────────────

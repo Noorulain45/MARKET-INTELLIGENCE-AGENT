@@ -1,68 +1,38 @@
-import cron from 'node-cron';
 import { collectAllNews } from '../services/collectors/newsCollector';
 import { collectAllTrends } from '../services/collectors/trendCollector';
 import { collectAllSentiment } from '../services/collectors/sentimentCollector';
 import { managerAgent } from '../services/ai/agents/managerAgent';
 import { logger } from '../utils/logger';
-import { emitToDashboard } from '../config/socket';
 
-export function startScheduledJobs(): void {
-  // Collect news every 2 hours
-  cron.schedule('0 */2 * * *', async () => {
-    logger.info('Cron: Starting news collection');
-    try {
-      await collectAllNews();
-      emitToDashboard('data:news:updated', { timestamp: new Date() });
-    } catch (err) {
-      logger.error('Cron news collection error:', err);
-    }
-  });
+/**
+ * These functions are called by the /api/v1/cron/* endpoints,
+ * which Vercel Cron Jobs hits on a schedule defined in vercel.json.
+ */
 
-  // Collect trends every 6 hours
-  cron.schedule('0 */6 * * *', async () => {
-    logger.info('Cron: Starting trend collection');
-    try {
-      await collectAllTrends();
-      emitToDashboard('data:trends:updated', { timestamp: new Date() });
-    } catch (err) {
-      logger.error('Cron trends collection error:', err);
-    }
-  });
+export async function runNewsCollection(): Promise<{ ok: boolean; message: string }> {
+  logger.info('Cron: Starting news collection');
+  await collectAllNews();
+  logger.info('Cron: News collection complete');
+  return { ok: true, message: 'News collection complete' };
+}
 
-  // Collect sentiment daily at 3 AM
-  cron.schedule('0 3 * * *', async () => {
-    logger.info('Cron: Starting sentiment collection');
-    try {
-      await collectAllSentiment();
-      emitToDashboard('data:sentiment:updated', { timestamp: new Date() });
-    } catch (err) {
-      logger.error('Cron sentiment collection error:', err);
-    }
-  });
+export async function runTrendCollection(): Promise<{ ok: boolean; message: string }> {
+  logger.info('Cron: Starting trend collection');
+  await collectAllTrends();
+  logger.info('Cron: Trend collection complete');
+  return { ok: true, message: 'Trend collection complete' };
+}
 
-  // Generate AI insights every 12 hours
-  cron.schedule('0 */12 * * *', async () => {
-    logger.info('Cron: Generating AI insights');
-    try {
-      const result = await managerAgent({ type: 'full' });
-      emitToDashboard('data:insights:updated', {
-        insights: result.finalInsight,
-        timestamp: new Date(),
-      });
-    } catch (err) {
-      logger.error('Cron AI insights error:', err);
-    }
-  });
+export async function runSentimentCollection(): Promise<{ ok: boolean; message: string }> {
+  logger.info('Cron: Starting sentiment collection');
+  await collectAllSentiment();
+  logger.info('Cron: Sentiment collection complete');
+  return { ok: true, message: 'Sentiment collection complete' };
+}
 
-  // Run initial collection on startup (with delay to avoid startup race conditions)
-  setTimeout(async () => {
-    try {
-      logger.info('Running initial data collection...');
-      await collectAllTrends();
-    } catch (err) {
-      logger.warn('Initial collection warning:', err);
-    }
-  }, 5000);
-
-  logger.info('✅ All cron jobs scheduled');
+export async function runAIInsights(): Promise<{ ok: boolean; message: string; insights?: string }> {
+  logger.info('Cron: Generating AI insights');
+  const result = await managerAgent({ type: 'full' });
+  logger.info('Cron: AI insights complete');
+  return { ok: true, message: 'AI insights complete', insights: result.finalInsight };
 }

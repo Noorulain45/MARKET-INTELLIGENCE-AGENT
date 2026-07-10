@@ -23,9 +23,9 @@ import reportsRoutes from './routes/reports.routes';
 import alertsRoutes from './routes/alerts.routes';
 import chatRoutes from './routes/chat.routes';
 import analyticsRoutes from './routes/analytics.routes';
-import searchRoutes from './routes/search.routes';
 import agentsRoutes from './routes/agents.routes';
 import watchlistRoutes from './routes/watchlist.routes';
+import cronRoutes from './routes/cron.routes';
 
 const app = express();
 
@@ -99,9 +99,9 @@ app.use('/api/v1/reports', reportsRoutes);
 app.use('/api/v1/alerts', alertsRoutes);
 app.use('/api/v1/chat', chatRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
-app.use('/api/v1/search', searchRoutes);
 app.use('/api/v1/agents', agentsRoutes);
 app.use('/api/v1/watchlists', watchlistRoutes);
+app.use('/api/v1/cron', cronRoutes);
 
 // Error handling
 app.use(notFound);
